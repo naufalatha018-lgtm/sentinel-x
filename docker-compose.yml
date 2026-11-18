@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # ============================================================================
+  # Sentinel-X FastAPI Backend Inference Service
+  # ============================================================================
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sentinel-x-api
+    ports:
+      - "18000:18000"
+    environment:
+      - PORT=18000
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./data:/app/data
+      - ./models/artifacts:/app/models/artifacts
+      - ./configs:/app/configs
+    command: >
+      sh -c "python run_pipeline.py && uvicorn src.api.main:app --host 0.0.0.0 --port 18000"
+    restart: unless-stopped
+
+  # ============================================================================
+  # Sentinel-X Streamlit Interactive Command Center
+  # ============================================================================
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sentinel-x-dashboard
+    ports:
+      - "8501:8501"
+    environment:
+      - STREAMLIT_SERVER_PORT=8501
+      - STREAMLIT_SERVER_ADDRESS=0.0.0.0
+      - API_BASE_URL=http://api:18000
+    volumes:
+      - ./data:/app/data
+      - ./models/artifacts:/app/models/artifacts
+      - ./configs:/app/configs
+    command: >
+      streamlit run src/dashboard/app.py --server.port=8501 --server.address=0.0.0.0
+    depends_on:
+      - api
+    restart: unless-stopped

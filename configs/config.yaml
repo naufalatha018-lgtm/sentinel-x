@@ -1,0 +1,137 @@
+# ==============================================================================
+# Sentinel-X: Real-Time Industrial IoT Predictive Maintenance System
+# Configuration Specification
+# Author: Paul Gallagher / Principal ML Architect
+# ==============================================================================
+
+project:
+  name: "Sentinel-X"
+  version: "1.0.0"
+  description: "Real-Time Industrial IoT Predictive Maintenance & Anomaly Detection System"
+  author: "Paul Gallagher"
+  random_seed: 42
+
+paths:
+  raw_data_dir: "data/raw"
+  processed_data_dir: "data/processed"
+  raw_telemetry_file: "data/raw/telemetry_raw.csv"
+  processed_features_file: "data/processed/features.parquet"
+  processed_features_csv: "data/processed/features.csv"
+  artifacts_dir: "models/artifacts"
+  isolation_forest_model: "models/artifacts/isolation_forest.joblib"
+  autoencoder_model: "models/artifacts/autoencoder_anomaly.pt"
+  rul_model: "models/artifacts/rul_regressor.joblib"
+  scaler: "models/artifacts/scaler.joblib"
+  feature_metadata: "models/artifacts/feature_names.json"
+  evaluation_metrics: "models/artifacts/evaluation_metrics.json"
+
+simulation:
+  n_machines: 8
+  machine_ids:
+    - "MCH-001"
+    - "MCH-002"
+    - "MCH-003"
+    - "MCH-004"
+    - "MCH-005"
+    - "MCH-006"
+    - "MCH-007"
+    - "MCH-008"
+  timesteps_per_machine: 1500
+  sampling_rate_seconds: 10
+  anomaly_injection_rate: 0.04
+  sensors:
+    vibration:
+      baseline: 2.2
+      noise_std: 0.18
+      critical_threshold: 6.8
+      unit: "mm/s"
+    temperature:
+      baseline: 62.0
+      noise_std: 1.5
+      critical_threshold: 92.0
+      unit: "°C"
+    rpm:
+      baseline: 1780.0
+      noise_std: 15.0
+      critical_threshold_low: 1450.0
+      critical_threshold_high: 2150.0
+      unit: "RPM"
+    pressure:
+      baseline: 5.4
+      noise_std: 0.22
+      critical_threshold_low: 3.2
+      critical_threshold_high: 8.5
+      unit: "bar"
+    voltage:
+      baseline: 400.0
+      noise_std: 4.5
+      critical_threshold_low: 365.0
+      critical_threshold_high: 435.0
+      unit: "V"
+  degradation_modes:
+    - "bearing_wear"
+    - "thermal_runaway"
+    - "pressure_seal_leakage"
+    - "electrical_harmonic_fault"
+
+features:
+  raw_sensor_columns:
+    - "vibration"
+    - "temperature"
+    - "rpm"
+    - "pressure"
+    - "voltage"
+  lag_windows: [1, 3, 5, 10]
+  rolling_windows: [5, 15, 30]
+  rolling_metrics: ["mean", "std", "min", "max", "ptp"]
+  ewma_spans: [5, 15]
+  target_column: "rul"
+  anomaly_label_column: "is_anomaly"
+
+models:
+  anomaly_detection:
+    isolation_forest:
+      n_estimators: 150
+      max_samples: "auto"
+      contamination: 0.05
+      random_state: 42
+    autoencoder:
+      input_dim: null  # determined at runtime
+      hidden_dims: [64, 32, 16]
+      latent_dim: 8
+      dropout: 0.1
+      learning_rate: 0.001
+      weight_decay: 0.00001
+      batch_size: 64
+      epochs: 25
+      contamination_percentile: 95.0
+  rul_prediction:
+    model_type: "xgboost"  # fallback to HistGradientBoostingRegressor if needed
+    xgb_params:
+      n_estimators: 250
+      learning_rate: 0.04
+      max_depth: 6
+      subsample: 0.85
+      colsample_bytree: 0.85
+      random_state: 42
+      n_jobs: -1
+    hgb_params:
+      max_iter: 250
+      learning_rate: 0.04
+      max_depth: 8
+      random_state: 42
+  explainability:
+    max_background_samples: 100
+    top_k_features: 10
+
+api:
+  host: "0.0.0.0"
+  port: 18000
+  reload: false
+  cors_origins: ["*"]
+  stream_delay_seconds: 1.0
+
+dashboard:
+  port: 8501
+  api_base_url: "http://127.0.0.1:18000"
+  refresh_interval_ms: 2000

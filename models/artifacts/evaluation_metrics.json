@@ -1,0 +1,67 @@
+{
+  "timestamp": "2026-11-18T13:53:41Z",
+  "pipeline_version": "1.0.0",
+  "anomaly_detection": {
+    "isolation_forest": {
+      "model_name": "isolation_forest",
+      "accuracy": 0.9349,
+      "precision": 0.899,
+      "recall": 0.7768,
+      "f1_score": 0.8335,
+      "roc_auc": 0.9796,
+      "pr_auc": 0.9161,
+      "confusion_matrix": {
+        "true_negative": 2195,
+        "false_positive": 52,
+        "false_negative": 133,
+        "true_positive": 463
+      },
+      "total_samples": 2843,
+      "true_anomalies": 596,
+      "predicted_anomalies": 515
+    },
+    "pytorch_autoencoder": {
+      "model_name": "pytorch_autoencoder",
+      "accuracy": 0.8125,
+      "precision": 0.6013,
+      "recall": 0.3138,
+      "f1_score": 0.4123,
+      "roc_auc": 0.8341,
+      "pr_auc": 0.5296,
+      "confusion_matrix": {
+        "true_negative": 2123,
+        "false_positive": 124,
+        "false_negative": 409,
+        "true_positive": 187
+      },
+      "total_samples": 2843,
+      "true_anomalies": 596,
+      "predicted_anomalies": 311
+    }
+  },
+  "rul_regression": {
+    "model_name": "rul_xgboost_regressor",
+    "rmse": 116.71,
+    "mae": 85.43,
+    "r2_score": 0.9191,
+    "mape_percent": 29.12,
+    "phm08_penalty_score": 1.9351816769076173e+23,
+    "sample_count": 2843
+  },
+  "dataset_summary": {
+    "total_samples": 11696,
+    "feature_count": 118,
+    "train_machines": [
+      "MCH-003",
+      "MCH-001",
+      "MCH-008",
+      "MCH-006",
+      "MCH-002",
+      "MCH-007"
+    ],
+    "test_machines": [
+      "MCH-004",
+      "MCH-005"
+    ]
+  }
+}
